@@ -37,8 +37,7 @@ def generateReleaseNotes() {
                  assets : project.samples.collect {
                      [
                              title      : project(it).name,
-                             download   : GITHUB_DOWNLOAD_PREFIX + "v${releaseVersion}/"
-                                     + project(it).name + "-v${releaseVersion}.zip",
+                             download   : GITHUB_DOWNLOAD_PREFIX + "v${releaseVersion}/${project(it).name}-debug.apk",
                              description: project(it).description,
                      ]
                  }]
@@ -99,8 +98,7 @@ task configureGithub() << {
         name = "v${rootProject.version}"
         body = generateReleaseNotes()
         assets = project.samples.collect {
-            project(it).buildDir.absolutePath + "/distributions/" + project(it).name +
-                    "-v${rootProject.version}.zip"
+            "${project(it).buildDir.absolutePath}/outputs/apk/${project(it).name}-debug.apk"
         }
     }
 }
@@ -111,7 +109,6 @@ configureGithub.mustRunAfter ":createReleaseTag"
 updateVersion.dependsOn ":githubRelease"
 githubRelease.mustRunAfter ":configureGithub"
 
-githubRelease.dependsOn project(":samples").subprojects.collect { it.path + ":githubReleaseZip" }
 updateReleaseVersionChangelog.mustRunAfter ":afterReleaseBuild"
 preTagCommit.dependsOn ':updateReleaseVersionChangelog'
 updateNewVersionChangelog.mustRunAfter ":updateVersion"
@@ -124,46 +121,4 @@ release {
     revertOnFail = true
     tagTemplate = 'v$version'
     versionProperties = ['VERSION_NAME']
-}
-
-subprojects {
-    if (parent.name == 'samples') {
-            task githubReleaseZip(type: Zip) {
-                println("test-version=" + rootProject.version)
-                from('.') {
-                    filesNotMatching("**/*.png") {
-                        filter { String line ->
-                            line.replaceAll("compile project\\(':rides-android'\\)",
-                                    "compile '${GROUP}:rides-android:${rootProject.version}'")
-                        }
-                        filter { String line ->
-                            line.replaceAll("compile project\\(':core-android'\\)",
-                                    "compile '${GROUP}:core-android:${rootProject.version}'")
-                        }
-                    }
-                    into '.'
-                    exclude 'build'
-                    exclude '*.iml'
-                }
-
-                from(rootProject.projectDir.absolutePath) {
-                    include 'gradle/'
-                    include 'gradlew'
-                    include 'gradlew.bat'
-                    include 'LICENSE'
-                    into '.'
-                }
-
-                from('build/poms') {
-                    include 'pom-default.xml'
-                    rename { String fileName ->
-                        fileName.replaceAll('-default', '')
-                    }
-                    filter { String line ->
-                        line.replaceAll('-SNAPSHOT', '')
-                    }
-                    into '.'
-                }
-            }
-    }
 }
