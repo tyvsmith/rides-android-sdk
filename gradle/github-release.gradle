@@ -126,26 +126,10 @@ release {
     versionProperties = ['VERSION_NAME']
 }
 
-// github {
-//     owner = GITHUB_OWNER
-//     repo = GITHUB_REPO
-//     token = "${GITHUB_TOKEN}"
-//     tagName = "v${rootProject.version}"
-//     targetCommitish = GITHUB_BRANCH
-//     name = "v${rootProject.version}"
-//     body = generateReleaseNotes()
-//     assets = project.samples.collect {
-//         project(it).buildDir.absolutePath + "/distributions/" + project(it).name +
-//                 "-v${rootProject.version}.zip"
-//     }
-// }
-
-
 subprojects {
     if (parent.name == 'samples') {
             task githubReleaseZip(type: Zip) {
-                version = "v${rootProject.version}"
-
+                println("test-version=" + rootProject.version)
                 from('.') {
                     filesNotMatching("**/*.png") {
                         filter { String line ->
