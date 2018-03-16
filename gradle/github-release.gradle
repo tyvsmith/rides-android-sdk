@@ -104,18 +104,19 @@ release {
     tagTemplate = 'v$version'
     versionProperties = ['VERSION_NAME']
 }
-
-github {
-    owner = GITHUB_OWNER
-    repo = GITHUB_REPO
-    token = "${GITHUB_TOKEN}"
-    tagName = "v${rootProject.version}"
-    targetCommitish = GITHUB_BRANCH
-    name = "v${rootProject.version}"
-    body = generateReleaseNotes()
-    assets = project.samples.collect {
-        project(it).buildDir.absolutePath + "/distributions/" + project(it).name +
-                "-v${rootProject.version}.zip"
+afterEvaluate {
+    github {
+        owner = GITHUB_OWNER
+        repo = GITHUB_REPO
+        token = "${GITHUB_TOKEN}"
+        tagName = "v${rootProject.version}"
+        targetCommitish = GITHUB_BRANCH
+        name = "v${rootProject.version}"
+        body = generateReleaseNotes()
+        assets = project.samples.collect {
+            project(it).buildDir.absolutePath + "/distributions/" + project(it).name +
+                    "-v${rootProject.version}.zip"
+        }
     }
 }
 
